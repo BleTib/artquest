@@ -1,0 +1,20 @@
+{
+  "learning_rate": 8e-6,
+  "betas": "(0.9, 0.98)",
+  "eps": 1e-6,
+  "weight_decay": 0.2,
+  "backbone": "ViT-B/32",
+  "epochs": 30,
+  "batch_size": 400,
+  "batch_size_val": 400,
+  "train_batch_shuffle":"True",
+  "eval_mode": "False",
+  "inference_interval": 1,
+  "early_stopping_epochs": 3,
+  "traindata": "../data/SemArt/semart_train.csv",
+  "valdata": "../data/SemArt/semart_val.csv",
+  "image_path": "../data/SemArt/Images/",
+  "output_path": "../model_checkpoints",
+  "description":"",
+  "project": "CLIP-finetuning"
+}

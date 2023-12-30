@@ -1,0 +1,27 @@
+NAME: 'SEMARTCLIP.200BS.IMAGE_TO_TEXT'
+OUTPUT_DIR: '../output'
+RESULTS_DIR: '../output'
+CPU_MODE: False
+INPUT_SIZE: (250, 250)
+SHOW_STEP: 10
+
+DATASET:
+  DATASET: 'SemArt'
+  DATA_TYPE: 'jpg'
+  TEST_CSV: "semart_test.csv"
+  DATA_DIR: '../../data/SemArt'
+  IMAGE_DIR: '../../data/SemArt/Images'
+
+TRAIN:
+  DIM: 512
+  MAX_SEQ_LENGTH: 77 
+  NUM_WORKERS: 1 
+
+KNN:
+  K: 1
+
+TEST:
+  BATCH_SIZE: 200
+  CLIP_ORG: False
+  CLIP_PATH: '../../model_checkpoints/clip_finetuned/clip_finetuned.pt'
+  
