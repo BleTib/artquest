@@ -16,8 +16,8 @@ ArtQuest and SemArt need to be downloaded manually and extracted in the data dir
 ```
 artquest
 ├── data
-└── artquest
-└── SemArt
+    └── artquest
+    └── SemArt
 ```
 
 ## Install dependencies
