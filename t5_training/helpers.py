@@ -201,7 +201,7 @@ def false_preds_to_string(df):
 
 
 def save_model_and_logs(output_path, train_str, dfs, model_cp, cfg):
-    dirname="t5_artquest_"+cfg["book_variant"]
+    dirname="t5_"+cfg["book_variant"]
     if cfg["text_only"]=="True":
         dirname+="_textonly"
     savedir = os.path.join(

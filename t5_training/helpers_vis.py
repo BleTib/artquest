@@ -47,12 +47,10 @@ class image_title_dataset(Dataset):
         return image_emb, question, answer, context, question_class
 
 
-def read_data(data_path, cache_path, batch_size, question_class, shuffle):
+def read_data(data_path, cache_path, batch_size, shuffle):
     data = pd.read_csv(data_path)
     data = data.join(pd.read_csv(cache_path).set_index("image"), on="image")
-    data["question_class"] = ["additional" for _ in range(len(data))]
-    if question_class != '':
-        data = data[data["question_class"] == question_class]
+    data["question_class"] = ["artquest" for _ in range(len(data))]
     list_image_emb = [[ast.literal_eval(emb)]
                       for emb in data["img_emb"].tolist()]
     images = data["image"].tolist()
@@ -68,11 +66,11 @@ def read_data(data_path, cache_path, batch_size, question_class, shuffle):
 
 def get_dataloaders(cfg):
     train_dataloader = read_data(
-        cfg["traindata"], cfg["semart_cache"], cfg["batch_size"], cfg["question_class"], cfg["train_batch_shuffle"])
+        cfg["traindata"], cfg["semart_cache"], cfg["batch_size"], "True")
     val_dataloader = read_data(
-        cfg["valdata"],  cfg["semart_cache"], cfg["batch_size"], cfg["question_class"], "False")
+        cfg["valdata"],  cfg["semart_cache"], cfg["batch_size"], "False")
     test_dataloader = read_data(
-        cfg["testdata"], cfg["semart_cache"],  cfg["batch_size"], "", "False")
+        cfg["testdata"], cfg["semart_cache"],  cfg["batch_size"], "False")
     cfg.update({"train_size": len(train_dataloader.dataset)})
     cfg.update({"val_size": len(val_dataloader.dataset)})
     cfg.update({"test_size": len(test_dataloader.dataset)})
@@ -94,9 +92,6 @@ def init_models(cfg):
     else:
         models["model"] = T5VisForConditionalGeneration.from_pretrained(
             cfg["t5_model"]).to(device)
-    if cfg["pretrained_model_path"] not in ["", "dummy"]:
-        print("using pretrained model:", cfg["pretrained_model_path"])
-        load_model(cfg["pretrained_model_path"], models["model"])
     return models
 
 
@@ -211,10 +206,10 @@ def all_metrics_to_string(df):
     if len(df[df["question_class"] == "knowledge"]) > 0:
         metrics["knowledge"] = eval_df(df[df["question_class"] == "knowledge"])
     if len(df[df["question_class"] == "visual"]) > 0 and len(df[df["question_class"] == "knowledge"]) > 0:
-        metrics["vis+know"] = eval_df(df[df["question_class"] != "additional"])
-    if len(df[df["question_class"] == "additional"]) > 0:
-        metrics["additional"] = eval_df(
-            df[df["question_class"] == "additional"])
+        metrics["vis+know"] = eval_df(df[df["question_class"] != "artquest"])
+    if len(df[df["question_class"] == "artquest"]) > 0:
+        metrics["artquest"] = eval_df(
+            df[df["question_class"] == "artquest"])
     for k, v in metrics.items():
         string += k + "\n"+metrics_to_string(v)+"\n"
     return string, metrics

@@ -18,6 +18,59 @@ seed = 0
 device = ""
 
 
+class image_title_dataset(Dataset):
+    def __init__(self, list_image_emb, images, questions, answers, context, question_classes):
+
+        self.list_image_emb = list_image_emb
+        self.images = images
+        self.questions = [q.lower() for q in questions]
+        self.answers = [a.lower() for a in answers]
+        self.contexts = [c.lower() for c in context]
+        self.question_classes = question_classes
+        self.question_types = ["aqua has no type"] * len(self.questions)
+
+    def __len__(self):
+        return len(self.questions)
+
+    def __getitem__(self, idx):
+        image_emb = self.list_image_emb[idx]
+        question = self.questions[idx]
+        answer = self.answers[idx]
+        context = self.contexts[idx]
+        question_class = self.question_classes[idx]
+        return image_emb, question, answer, context, question_class
+
+
+def read_data(data_path, cache_path, batch_size, shuffle):
+    data = pd.read_json(data_path)
+    data = data.join(pd.read_csv(cache_path).set_index("image"), on="image")
+    data["question_class"] = data["need_external_knowledge"].apply(
+        lambda x: "knowledge" if x else "visual")
+    list_image_emb = [[ast.literal_eval(emb)]
+                      for emb in data["img_emb"].tolist()]
+    images = data["image"].tolist()
+    questions = data["question"].tolist()
+    answers = data["answer"].tolist()
+    question_class = data["question_class"].tolist()
+    contexts = data["context"].tolist()
+    dataset = image_title_dataset(
+        list_image_emb, images, questions, answers, contexts, question_class)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=ast.literal_eval(shuffle))
+
+
+def get_dataloaders(cfg):
+    train_dataloader = read_data(
+        cfg["traindata"], cfg["semart_cache"], cfg["batch_size"], "True")
+    val_dataloader = read_data(
+        cfg["valdata"],  cfg["semart_cache"], cfg["batch_size"], "False")
+    test_dataloader = read_data(
+        cfg["testdata"], cfg["semart_cache"],  cfg["batch_size"], "False")
+    cfg.update({"train_size": len(train_dataloader.dataset)})
+    cfg.update({"val_size": len(val_dataloader.dataset)})
+    cfg.update({"test_size": len(test_dataloader.dataset)})
+    return train_dataloader, val_dataloader, test_dataloader
+
+
 def paths_exist(cfg):
     if not os.path.exists(cfg["output_path"]):
         print("Output path does not exist. EXIT.")

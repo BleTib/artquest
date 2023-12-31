@@ -4,9 +4,9 @@ import os
 import pandas as pd
 import torch
 from t5_model.t5vis import T5VisForConditionalGeneration
+from t5_training.metrics import calc_bleu_sentence, calc_em
 from tqdm import tqdm
 from transformers import T5Tokenizer
-from t5_training.metrics import calc_bleu_sentence, calc_em
 
 torch.manual_seed(2)
 
@@ -35,7 +35,16 @@ candiate_contexts = candiate_contexts.rename(
 artquest_test = artquest_test.join(
     candiate_contexts.set_index("image"), on="image")
 
+
 # Load T5 model
+model = "google/flan-t5-small"
+tokenizer = T5Tokenizer.from_pretrained(model)
+t5openbook = T5VisForConditionalGeneration.from_pretrained(
+    model).to(device)
+t5openbook.load_state_dict(torch.load(
+    "../model_checkpoints/t5_artquest/t5_openbook/model.pt")["model_state_dict"], strict=True)
+
+# Make predictions
 
 
 def get_pred(q, c, img_emb, model, tokenizer):
@@ -51,14 +60,6 @@ def get_pred(q, c, img_emb, model, tokenizer):
         output_ids, skip_special_tokens=True)[0]
 
 
-model = "google/flan-t5-small"
-tokenizer = T5Tokenizer.from_pretrained(model)
-t5openbook = T5VisForConditionalGeneration.from_pretrained(
-    model).to(device)
-t5openbook.load_state_dict(torch.load(
-    "../model_checkpoints/t5_artquest_openbook/model.pt")["model_state_dict"], strict=True)
-
-# Make predictions
 preds = []
 preds_ret = []
 img_emb_cache = {}
